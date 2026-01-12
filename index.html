@@ -76,6 +76,10 @@
                 </ul>
                 <div class="footer">
                     <input type="button" id="button_new_mesocycle_cancel" class="center cancel" translation="value|cancel">
+                    <div class="new_messocycle_preset_container">
+                        <input type="button" class="button_new_mesocycle_save_preset center" translation="value|save_preset" disabled>
+                        <input type="button" class="button_new_mesocycle_load_preset center" translation="value|load_preset" disabled>
+                    </div>
                     <input type="button" id="button_new_mesocycle_next" class="center" translation="value|next" disabled>
                 </div>
             </form>
@@ -84,9 +88,19 @@
                 <ul id="exercise_list"></ul>
                 <div class="footer">
                     <input type="button" id="button_new_mesocycle_back" class="center" translation="value|back">
+                    <div class="new_messocycle_preset_container">
+                        <input type="button" class="button_new_mesocycle_save_preset center" translation="value|save_preset">
+                        <input type="button" class="button_new_mesocycle_load_preset center" translation="value|load_preset">
+                    </div>
                     <input type="button" id="button_new_mesocycle_accept" class="center accept" translation="value|accept" disabled>
                 </div>
             </form>
+        </div>
+        <div id="container_modals">
+            <div id="modal_presets" class="modal">
+                <h2 translation="text|modal_presets_title"></h2>
+                <div id="modal_presets_content"></div>
+            </div>
         </div>
         <footer>
             <p translation="html|copyleft_text"></p>

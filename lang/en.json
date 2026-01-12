@@ -5,6 +5,8 @@
     "your_mesocycles": "Your Mesocycles",
     "no_mesocycles_yet": "You don't have any mesocycles yet.",
     "new_mesocycle": "New Mesocycle",
+    "load_preset":"Load preset",
+    "save_preset":"Save preset",
 
     "error_not_implemented_yet": "Not implemented yet!",
 

@@ -28,10 +28,13 @@ const buttonCancelNewMesocycle = document.querySelector("#button_new_mesocycle_c
 const buttonNextNewMesocycle = document.querySelector("#button_new_mesocycle_next")
 const buttonBackNewMesocycle = document.querySelector("#button_new_mesocycle_back")
 const buttonAcceptNewMesocycle = document.querySelector("#button_new_mesocycle_accept")
+const buttonsSavePresetNewMesocycle = document.querySelectorAll(".button_new_mesocycle_save_preset")
+const buttonsLoadPresetNewMesocycle = document.querySelectorAll(".button_new_mesocycle_load_preset")
 const elementLoader = document.querySelector("#loader")
 const containerYourMesocycles = document.querySelector("#your_mesocycles")
 const containerNewMesocycle = document.querySelector("#new_mesocycle")
 const containerNewMesocyclePage2 = document.querySelector("#new_mesocycle_page2")
+const containerModals = document.querySelector("#container_modals")
 
 let yourMesocycles = getYourMesocycles()
 
@@ -52,6 +55,7 @@ function init(){
     setLanguage(getLanguage())
     updateYourMesocycles()
     setEvents()
+    disableEnableNewMesocycleButtons()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -305,6 +309,8 @@ function setExercisesEvents(){
 
             if(elementExerciseList.querySelector(".active") === null)buttonAcceptNewMesocycle.setAttribute("disabled","")
             else buttonAcceptNewMesocycle.removeAttribute("disabled")
+
+            disableEnableNewMesocycleButtons()
         })
     }
 }
@@ -429,6 +435,22 @@ function showContainer(container){
     container.classList.remove("hide")
 }
 
+function disableEnableNewMesocycleButtons(){
+    const requiredInputs = containerNewMesocycle.querySelectorAll("input:not([type=button])[required],select[required]")
+    const requiredInputsWithValue = [...requiredInputs].filter(input=>input.value)
+
+    console.log({requiredInputs},requiredInputs.length,{requiredInputsWithValue},requiredInputsWithValue.length)
+
+    if(requiredInputsWithValue.length === requiredInputs.length)buttonNextNewMesocycle.removeAttribute("disabled")
+    else buttonNextNewMesocycle.setAttribute("disabled","")
+
+    if(localStorage.getItem("mesocyclePresets"))buttonsLoadPresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
+    else buttonsLoadPresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
+
+    if(!buttonNextNewMesocycle.hasAttribute("disabled") && !buttonAcceptNewMesocycle.hasAttribute("disabled"))buttonsSavePresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
+    else buttonsSavePresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
+}
+
 function setEvents(){
 
     containerNewMesocycle.addEventListener("input",(event)=>{
@@ -443,13 +465,7 @@ function setEvents(){
             //TO-DO: ACTUALIZAR ESTRUCTURA EN containerNewMesocyclePage2 (Weider y Fullbody = Oculto | Torso - Pierna = (Tirón y Empuje = Torso) | Tirón - Empuje - Pierna = Predeterminado)
         }
 
-        const requiredInputs = containerNewMesocycle.querySelectorAll("input:not([type=button])[required],select[required]")
-        const requiredInputsWithValue = [...requiredInputs].filter(input=>input.value)
-
-        console.log({requiredInputs},requiredInputs.length,{requiredInputsWithValue},requiredInputsWithValue.length)
-
-        if(requiredInputsWithValue.length === requiredInputs.length)buttonNextNewMesocycle.removeAttribute("disabled")
-        else buttonNextNewMesocycle.setAttribute("disabled","")        
+        disableEnableNewMesocycleButtons()
     })
 
     buttonSpanish.addEventListener("click", (event)=>{
@@ -471,6 +487,23 @@ function setEvents(){
         event.preventDefault()
         showContainer(containerYourMesocycles)
     })
+
+    for(let indexButtonSavePreset = 0 ; indexButtonSavePreset < buttonsSavePresetNewMesocycle.length ; indexButtonSavePreset++){
+        const buttonSavePreset = buttonsSavePresetNewMesocycle[indexButtonSavePreset]
+        buttonSavePreset.addEventListener("click",(event)=>{
+            event.preventDefault()
+            savePreset()
+        })
+    }
+
+    for(let indexButtonLoadPreset = 0 ; indexButtonLoadPreset < buttonsLoadPresetNewMesocycle.length ; indexButtonLoadPreset++){
+        const buttonLoadPreset = buttonsLoadPresetNewMesocycle[indexButtonLoadPreset]
+        buttonLoadPreset.addEventListener("click",(event)=>{
+            event.preventDefault()
+            loadPresets()
+            openModal("modal_presets")
+        })
+    }
 
     buttonNextNewMesocycle.addEventListener("click", (event)=>{
         event.preventDefault()
@@ -542,6 +575,14 @@ function setEvents(){
         //alert(translate("error_not_implemented_yet"))
 
         newMesocycle()
+    })
+
+    containerModals.addEventListener("click",(event)=>{
+        event.preventDefault()
+        
+        if(event.target !== containerModals)return
+
+        closeModal()
     })
 }
 
@@ -797,7 +838,154 @@ function updateYourMesocycles(){
                 <p><span translation="text|mesocycle_structure">${translate("mesocycle_structure")}</span>: <span translation="text|mesocycle_structure_${mesocycle.structure}">${translate(`mesocycle_structure_${mesocycle.structure}`)}</span></p>
                 <p><span translation="text|mesocycle_objective">${translate("mesocycle_objective")}</span>: <span translation="text|mesocycle_objective_${mesocycle.objective}">${translate(`mesocycle_objective_${mesocycle.objective}`)}</span></p>
                 <p><span translation="text|total_microcycle">${translate("total_microcycle")}</span>: ${mesocycle.microcycles.length}</p>
+                <button class="accept" translation="text|enter">${translate("enter")}</button>
+                <button class="cancel" translation="text|delete">${translate("delete")}</button>
             </div>`
         )
+    }
+}
+
+function savePreset(){
+    const name = document.querySelector("#new_mesocycle_name").value.trim()
+    const objective = document.querySelector("#new_mesocycle_objective").value
+    const structure = document.querySelector("#new_mesocycle_structure").value
+    const total_microcycle = document.querySelector("#new_mesocycle_total_microcycle").value
+    const sessions_microcycle = document.querySelector("#new_mesocycle_sessions_microcycle").value
+    const exercisesActive = containerNewMesocyclePage2.querySelectorAll(".exercise.active")
+
+    if(!name || !objective || !structure || !total_microcycle || !sessions_microcycle || exercisesActive.length === 0){
+        alert(translate("error_preset_options_required"))
+        return
+    }
+
+    const exercises = reduceOptionExercises(getInputValues(containerNewMesocyclePage2,undefined,true))
+
+    console.log({exercises})
+
+    const preset = {
+        name,
+        objective,
+        structure,
+        total_microcycle,
+        sessions_microcycle,
+        exercises
+    }
+
+    const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
+    const existName = presets.find(preset=>preset.name.toLowerCase() === name.toLowerCase())
+
+    if(existName){
+        const confirmOverwrite = confirm(translate("confirm_overwrite_preset"))
+        if(!confirmOverwrite)return
+
+        const indexExistName = presets.findIndex(preset=>preset.name.toLowerCase() === name.toLowerCase())
+        presets[indexExistName] = preset
+    }else presets.push(preset)
+    localStorage.setItem("mesocyclePresets",JSON.stringify(presets))
+
+}
+
+function loadPresets(){
+    const modalPresetsContent = document.getElementById("modal_presets_content")
+    modalPresetsContent.innerHTML = ""
+
+    const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
+
+    for(let indexPreset = 0 ; indexPreset < presets.length ; indexPreset++){
+        const preset = presets[indexPreset]
+
+        modalPresetsContent.insertAdjacentHTML(
+            "beforeend",
+            `<div class="preset" id_preset="${indexPreset}">
+                <h2>${preset.name}</h2>
+                <button class="accept" data-preset-index="${indexPreset}" translation="text|load">${translate("load")}</button>
+                <button class="cancel" data-preset-index="${indexPreset}" translation="text|delete">${translate("delete")}</button>
+            </div>`
+        )
+    }
+
+    const buttonsAccept = modalPresetsContent.querySelectorAll(".preset .accept")
+    const buttonsCancel = modalPresetsContent.querySelectorAll(".preset .cancel")
+
+    for(let indexButtonAccept = 0 ; indexButtonAccept < buttonsAccept.length ; indexButtonAccept++){
+        const buttonAccept = buttonsAccept[indexButtonAccept]
+        buttonAccept.addEventListener("click",(event)=>{
+            event.preventDefault()
+            const presetIndex = buttonAccept.getAttribute("data-preset-index")
+            loadPreset(presetIndex)
+        })
+    }
+
+    for(let indexButtonCancel = 0 ; indexButtonCancel < buttonsCancel.length ; indexButtonCancel++){
+        const buttonCancel = buttonsCancel[indexButtonCancel]
+        buttonCancel.addEventListener("click",(event)=>{
+            event.preventDefault()
+            const presetIndex = buttonCancel.getAttribute("data-preset-index")
+            deletePreset(presetIndex)
+        })
+    }
+}
+
+function loadPreset(presetIndex){
+    const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
+    const preset = presets[presetIndex]
+
+    if(!preset){
+        alert(translate("error_preset_not_found"))
+        return
+    }
+
+    document.querySelector("#new_mesocycle_name").value = preset.name
+    document.querySelector("#new_mesocycle_objective").value = preset.objective
+    document.querySelector("#new_mesocycle_structure").value = preset.structure
+    document.querySelector("#new_mesocycle_total_microcycle").value = preset.total_microcycle
+    document.querySelector("#new_mesocycle_sessions_microcycle").value = preset.sessions_microcycle
+
+    //TO-DO: MARCAR EJERCICIOS Y GESTION BOTONES SIGUIENTE / ACEPTAR
+
+    disableEnableNewMesocycleButtons()
+    closeModal("modal_presets")
+}
+
+function deletePreset(presetIndex){
+    const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
+    const preset = presets[presetIndex]
+
+    if(!preset){
+        alert(translate("error_preset_not_found"))
+        return
+    }
+
+    const confirmDelete = confirm(translate("confirm_delete_preset"))
+    if(!confirmDelete)return
+
+    presets.splice(presetIndex,1)
+    localStorage.setItem("mesocyclePresets",JSON.stringify(presets))
+
+    loadPresets()
+}
+
+function openModal(idModal,autoRemoveTime){
+    if(!idModal)return
+    closeModal()
+
+    const modal = document.getElementById(idModal)
+
+    if(modal){
+        containerModals.classList.add("open")
+        modal.classList.add("active")
+    }
+
+    if(autoRemoveTime){
+        setTimeout(()=>{closeModal(idModal)},autoRemoveTime)
+    }
+}
+
+function closeModal(idModal = containerModals.querySelector(".modal.active")?.id){
+    const modal = document.getElementById(idModal)
+
+    if(modal){
+        containerModals.classList.remove("open")
+        modal.classList.remove("active")
     }
 }

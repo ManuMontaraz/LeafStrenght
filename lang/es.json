@@ -5,6 +5,8 @@
     "your_mesocycles": "Tus Mesociclos",
     "no_mesocycles_yet": "Aún no tienes mesociclos.",
     "new_mesocycle": "Nuevo Mesociclo",
+    "load_preset":"Cargar plantilla",
+    "save_preset":"Guardar plantilla",
 
     "error_not_implemented_yet": "¡Aún no ha sido implementado!",
 

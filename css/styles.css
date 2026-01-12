@@ -339,15 +339,14 @@ button, input[type="button"] {
         scrollbar-width:thin;
         scrollbar-color: var(--color-primary) var(--color-secondary);
         align-content: flex-start;
+        overflow: hidden;
+        overflow-y: auto;
         
         li{
             text-align: center;
         }
 
         &#exercise_list{
-            justify-content: space-evenly;
-            overflow: hidden;
-            overflow-y: auto;
             flex-wrap: wrap;
             flex-direction: row;
         
@@ -436,4 +435,90 @@ button, input[type="button"] {
         justify-content: space-around;
         flex-wrap: nowrap;
     }
+
+    .new_messocycle_preset_container{
+        display: flex;
+        gap:.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
+
+#container_modals {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background: rgba(0,0,0,.75);
+    width: 100dvw;
+    height: 100dvh;
+    cursor: pointer;
+    transition: var(--medium-transition);
+    pointer-events: none;
+    opacity: 0;
+    display:grid;
+    justify-items: center;
+    align-items: center;
+    overflow: hidden;
+
+    &.open{
+        pointer-events: all;
+        opacity: 1;
+    }
+
+    &>*{
+        grid-column:1;
+        grid-row:1;
+    }
+
+    .modal{
+        --width: calc( 210mm - var());
+        --width: calc( 210mm - var(--huge-margin) * 2);
+        opacity: 0;
+        width: var(--width);
+        margin-left: calc(0px - var(--large-margin));
+        padding: var(--large-margin);
+        background: var(
+        --color-primary);
+        border-radius: var(
+        --border-radius);
+        height: min-content;
+        margin-top: 100%;
+        transition: var(
+        --long-transition);
+        cursor: default;
+        max-width: calc(100dvw - 21rem);
+        max-height: calc(100dvh - var(--large-margin) * 2);
+        
+        h2{
+            text-align: center;
+        }
+
+        &.active{
+            pointer-events: all;
+            opacity: 1;
+            margin-top: 0%;
+        }
+
+        #modal_presets_content{
+            display:flex;
+            flex-wrap: wrap;
+            gap: var(--medium-margin);
+            padding: var(--huge-margin);
+            background-color: var(--color-secondary);
+            max-height: 32rem;
+            overflow: hidden;
+            overflow-y: auto;
+            scrollbar-width:thin;
+            scrollbar-color: var(--color-primary) var(--color-secondary);
+            align-content: flex-start;
+            justify-content: center;
+
+            .preset{
+                padding: var(--medium-margin);
+                border-radius: var(--border-radius);
+                background-color: var(--color-background);
+            }
+        }
+    }
+}
+ 
