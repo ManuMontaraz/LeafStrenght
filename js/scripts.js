@@ -16,6 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **********************************************************************************/
 
+/*************************************************************************************
+    
+ 
+ */
+
 let languageLoaded = false
 let exercisesLoaded = false
 
@@ -36,7 +41,7 @@ const containerNewMesocycle = document.querySelector("#new_mesocycle")
 const containerNewMesocyclePage2 = document.querySelector("#new_mesocycle_page2")
 const containerModals = document.querySelector("#container_modals")
 
-let yourMesocycles = getYourMesocycles()
+let yourMesocycles = await getYourMesocycles()
 
 console.log({exercises})
 console.log({muscles})
@@ -584,6 +589,14 @@ function setEvents(){
 
         closeModal()
     })
+
+    //PARA BORRAR:
+    document.querySelector("#button_asdf").addEventListener("click",(event)=>{
+        event.preventDefault()
+        const yourMesocycles = getYourMesocycles()
+
+        console.log(yourMesocycles)
+    })
 }
 
 function getInputValues(container,replaceId="",needActive){
@@ -627,11 +640,97 @@ function reduceOptionExercises(optionsExercises){
     }, {})
 }
 
-function getYourMesocycles(){
-    const yourMesocycles = localStorage.getItem("yourMesocycles")
+function openIndexedDB() {
+    const request = indexedDB.open("yourMesocyclesDB", 1);
 
-    if(!yourMesocycles)return []
-    return JSON.parse(yourMesocycles)
+    request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("yourMesocycles")) {
+            db.createObjectStore("yourMesocycles");
+        }
+    };
+
+    return request;
+}
+
+function getYourMesocycles(){
+    const request = openIndexedDB();
+
+    const promiseRequest = new Promise((resolve, reject) => {
+        request.onerror = () => reject(request.error);
+
+        request.onsuccess = (e) => {
+            const db = e.target.result;
+            const transaction = db.transaction("yourMesocycles", "readonly");
+            const objectStore = transaction.objectStore("yourMesocycles");
+            const getRequest = objectStore.get("yourMesocycles");
+
+            getRequest.onerror = () => reject(getRequest.error);
+
+            getRequest.onsuccess = () => {
+                const result = getRequest.result;
+                if (!result) {
+                    resolve([]);
+                    return;
+                }
+
+                try {
+                    const parsed = typeof result === "string" ? JSON.parse(result) : result;
+                    resolve(parsed);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+
+            transaction.onerror = () => reject(transaction.error);
+        };
+    })
+
+    let response = promiseRequest.then((data) => {
+        console.log("Mesocycles retrieved successfully:", data);
+        return data
+    }).catch((error) => {
+        console.error("Error retrieving mesocycles:", error);
+        return []
+    })
+
+    return response
+
+}
+
+function addToYourMesocycles(mesocycle){
+
+    const mesoscycles = getYourMesocycles()
+
+    mesoscycles.then((mesoscycles) => {
+
+        console.log(mesoscycles)
+        
+        mesoscycles.push(mesocycle)
+
+        const request = openIndexedDB()
+
+        request.onsuccess = function(event) {
+
+            const db = event.target.result
+
+            const transaction = db.transaction("yourMesocycles", "readwrite")
+            const objectStore = transaction.objectStore("yourMesocycles")
+
+            objectStore.put(mesoscycles, "yourMesocycles")
+
+            transaction.oncomplete = function() {
+                console.log("Mesocycle added successfully")
+            }
+
+            transaction.onerror = function(event) {
+                console.error("Error adding mesocycle:", event.target.error)
+            }
+
+            
+            updateYourMesocycles()
+        }
+    })
 }
 
 function newMesocycle(){
@@ -691,7 +790,10 @@ function newMesocycle(){
 
     console.log({mesocycle},"sessions_microcycle:",sessions_microcycle,"total_microcycle:",total_microcycle)
 
-    localStorage.setItem("yourMesocycles",JSON.stringify([...yourMesocycles,mesocycle]))
+    //localStorage.setItem("yourMesocycles",JSON.stringify([...yourMesocycles,mesocycle]))
+
+    addToYourMesocycles(mesocycle)
+
 
     showContainer(containerYourMesocycles)
 }
@@ -817,11 +919,13 @@ function getDataMicrocycle(arrayActualTotalMicrocycle,objective){
     return [intensity,rir,rpe,sets,reps]
 }
 
-function updateYourMesocycles(){
+async function updateYourMesocycles(){
     //TO-DO: ACTUALIZAR LA LISTA DE MESOCICLOS DEL USUARIO
     const mesocyclesList = containerYourMesocycles.querySelector("#mesocycles_list")
 
-    yourMesocycles = getYourMesocycles()
+    yourMesocycles = await getYourMesocycles()
+
+    console.log({yourMesocycles})
 
     mesocyclesList.innerHTML = ""
 
