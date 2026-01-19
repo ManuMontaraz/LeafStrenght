@@ -37,15 +37,16 @@
                 <h1 translation="text|your_mesocycles" class="center"></h1>
                 <ul id="mesocycles_list" translation="attribute|no_mesocycles_yet|message"></ul>
                 <input type="button" id="button_new_mesocycle" class="center" translation="value|new_mesocycle">
-                <input type="button" id="button_asdf" class="center" value="asdf">
             </form>
             <form id="new_mesocycle" class="hide container">
                 <h1 translation="text|new_mesocycle" class="center"></h1>
                 <ul>
                     <li>
+                        <label for="new_mesocycle_name" translation="text|mesocycle_name"></label>
                         <input type="text" id="new_mesocycle_name" name="new_mesocycle_name" translation="placeholder|mesocycle_name,title|mesocycle_name" required>
                     </li>
                     <li>
+                        <label for="new_mesocycle_objective" translation="text|mesocycle_objective"></label>
                         <select type="text" id="new_mesocycle_objective" name="new_mesocycle_objective" translation="title|mesocycle_objective" required>
                             <option value="" translation="text|mesocycle_objective"></option>
                             <option value="strength" translation="text|mesocycle_objective_strength"></option>
@@ -57,6 +58,7 @@
                         </select>
                     </li>
                     <li>
+                        <label for="new_mesocycle_structure" translation="text|mesocycle_structure"></label>
                         <select type="text" id="new_mesocycle_structure" name="new_mesocycle_structure" translation="title|mesocycle_structure" required>
                             <option value="" translation="text|mesocycle_structure"></option>
                             <option value="fullbody" translation="text|mesocycle_structure_fullbody"></option>
@@ -66,13 +68,15 @@
                         </select>
                     </li>
                     <li>
-                        <input type="number" id="new_mesocycle_total_microcycle" name="new_mesocycle_total_microcycle" translation="placeholder|mesocycle_total_microcycle,title|mesocycle_total_microcycle" required>
+                        <label for="new_mesocycle_total_microcycle" translation="text|mesocycle_total_microcycle"></label>
+                        <input type="number" id="new_mesocycle_total_microcycle" name="new_mesocycle_total_microcycle" translation="placeholder|mesocycle_total_microcycle,title|mesocycle_total_microcycle_title" required>
                     </li>
                     <li>
-                        <input type="number" id="new_mesocycle_sessions_microcycle" name="new_mesocycle_sessions_microcycle" translation="placeholder|mesocycle_sessions_microcycle,title|mesocycle_sessions_microcycle" required>
+                        <label for="new_mesocycle_sessions_microcycle" translation="text|mesocycle_sessions_microcycle"></label>
+                        <input type="number" id="new_mesocycle_sessions_microcycle" name="new_mesocycle_sessions_microcycle" translation="placeholder|mesocycle_sessions_microcycle,title|mesocycle_sessions_microcycle_title" required>
                     </li>
                     <!--<li>
-                        <input type="number" id="new_mesocycle_time_sessions" name="new_mesocycle_time_sessions" translation="placeholder|mesocycle_time_sessions,title|mesocycle_time_sessions" required>
+                        <input type="number" id="new_mesocycle_time_sessions" name="new_mesocycle_time_sessions" translation="placeholder|mesocycle_time_sessions,title|mesocycle_time_sessions_title" required>
                     </li>-->
                 </ul>
                 <div class="footer">

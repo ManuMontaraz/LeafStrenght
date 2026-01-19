@@ -41,7 +41,7 @@ const containerNewMesocycle = document.querySelector("#new_mesocycle")
 const containerNewMesocyclePage2 = document.querySelector("#new_mesocycle_page2")
 const containerModals = document.querySelector("#container_modals")
 
-let yourMesocycles = await getYourMesocycles()
+let yourMesocycles// = await getYourMesocycles()
 
 console.log({exercises})
 console.log({muscles})
@@ -60,7 +60,7 @@ function init(){
     setLanguage(getLanguage())
     updateYourMesocycles()
     setEvents()
-    disableEnableNewMesocycleButtons()
+    disableEnableNewMesocyclePage1Buttons()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,6 +292,13 @@ function setExercisesEvents(){
         //console.log(value)
     })
 
+    disableEnableNewMesocyclePage2Buttons()
+}
+
+function disableEnableNewMesocyclePage2Buttons(){
+    const elementExerciseList = document.querySelector("#exercise_list")
+    const elementsExercises = elementExerciseList.querySelectorAll(".exercise")
+
     for(let indexExercise = 0 ; indexExercise < elementsExercises.length ; indexExercise++){
 
         const elementExercice = elementsExercises[indexExercise]
@@ -315,9 +322,25 @@ function setExercisesEvents(){
             if(elementExerciseList.querySelector(".active") === null)buttonAcceptNewMesocycle.setAttribute("disabled","")
             else buttonAcceptNewMesocycle.removeAttribute("disabled")
 
-            disableEnableNewMesocycleButtons()
+            disableEnableNewMesocyclePage1Buttons()
         })
     }
+}
+
+function disableEnableNewMesocyclePage1Buttons(){
+    const requiredInputs = containerNewMesocycle.querySelectorAll("input:not([type=button])[required],select[required]")
+    const requiredInputsWithValue = [...requiredInputs].filter(input=>input.value)
+
+    console.log({requiredInputs},requiredInputs.length,{requiredInputsWithValue},requiredInputsWithValue.length)
+
+    if(requiredInputsWithValue.length === requiredInputs.length)buttonNextNewMesocycle.removeAttribute("disabled")
+    else buttonNextNewMesocycle.setAttribute("disabled","")
+
+    if(localStorage.getItem("mesocyclePresets"))buttonsLoadPresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
+    else buttonsLoadPresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
+
+    if(!buttonNextNewMesocycle.hasAttribute("disabled") && !buttonAcceptNewMesocycle.hasAttribute("disabled"))buttonsSavePresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
+    else buttonsSavePresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
 }
 
 function getLanguage() {
@@ -440,22 +463,6 @@ function showContainer(container){
     container.classList.remove("hide")
 }
 
-function disableEnableNewMesocycleButtons(){
-    const requiredInputs = containerNewMesocycle.querySelectorAll("input:not([type=button])[required],select[required]")
-    const requiredInputsWithValue = [...requiredInputs].filter(input=>input.value)
-
-    console.log({requiredInputs},requiredInputs.length,{requiredInputsWithValue},requiredInputsWithValue.length)
-
-    if(requiredInputsWithValue.length === requiredInputs.length)buttonNextNewMesocycle.removeAttribute("disabled")
-    else buttonNextNewMesocycle.setAttribute("disabled","")
-
-    if(localStorage.getItem("mesocyclePresets"))buttonsLoadPresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
-    else buttonsLoadPresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
-
-    if(!buttonNextNewMesocycle.hasAttribute("disabled") && !buttonAcceptNewMesocycle.hasAttribute("disabled"))buttonsSavePresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
-    else buttonsSavePresetNewMesocycle.forEach(button => button.setAttribute("disabled",""))
-}
-
 function setEvents(){
 
     containerNewMesocycle.addEventListener("input",(event)=>{
@@ -470,7 +477,7 @@ function setEvents(){
             //TO-DO: ACTUALIZAR ESTRUCTURA EN containerNewMesocyclePage2 (Weider y Fullbody = Oculto | Torso - Pierna = (Tirón y Empuje = Torso) | Tirón - Empuje - Pierna = Predeterminado)
         }
 
-        disableEnableNewMesocycleButtons()
+        disableEnableNewMesocyclePage1Buttons()
     })
 
     buttonSpanish.addEventListener("click", (event)=>{
@@ -589,14 +596,6 @@ function setEvents(){
 
         closeModal()
     })
-
-    //PARA BORRAR:
-    document.querySelector("#button_asdf").addEventListener("click",(event)=>{
-        event.preventDefault()
-        const yourMesocycles = getYourMesocycles()
-
-        console.log(yourMesocycles)
-    })
 }
 
 function getInputValues(container,replaceId="",needActive){
@@ -641,58 +640,62 @@ function reduceOptionExercises(optionsExercises){
 }
 
 function openIndexedDB() {
-    const request = indexedDB.open("yourMesocyclesDB", 1);
+    const request = indexedDB.open("yourMesocyclesDB", 1)
 
     request.onupgradeneeded = (e) => {
-        const db = e.target.result;
+        const db = e.target.result
         if (!db.objectStoreNames.contains("yourMesocycles")) {
-            db.createObjectStore("yourMesocycles");
+            db.createObjectStore("yourMesocycles")
         }
-    };
+    }
 
-    return request;
+    return request
 }
 
 function getYourMesocycles(){
-    const request = openIndexedDB();
+    const request = openIndexedDB()
 
     const promiseRequest = new Promise((resolve, reject) => {
-        request.onerror = () => reject(request.error);
+        request.onerror = () => reject(request.error)
 
         request.onsuccess = (e) => {
-            const db = e.target.result;
-            const transaction = db.transaction("yourMesocycles", "readonly");
-            const objectStore = transaction.objectStore("yourMesocycles");
-            const getRequest = objectStore.get("yourMesocycles");
+            const db = e.target.result
+            const transaction = db.transaction("yourMesocycles", "readonly")
+            const objectStore = transaction.objectStore("yourMesocycles")
+            const getRequest = objectStore.get("yourMesocycles")
 
-            getRequest.onerror = () => reject(getRequest.error);
+            getRequest.onerror = () => reject(getRequest.error)
 
             getRequest.onsuccess = () => {
-                const result = getRequest.result;
+                const result = getRequest.result
                 if (!result) {
-                    resolve([]);
-                    return;
+                    resolve([])
+                    return
                 }
 
                 try {
-                    const parsed = typeof result === "string" ? JSON.parse(result) : result;
-                    resolve(parsed);
+                    const parsed = typeof result === "string" ? JSON.parse(result) : result
+                    resolve(parsed)
                 } catch (err) {
-                    reject(err);
+                    reject(err)
                 }
             };
 
-            transaction.onerror = () => reject(transaction.error);
+            transaction.onerror = () => reject(transaction.error)
         };
     })
 
     let response = promiseRequest.then((data) => {
-        console.log("Mesocycles retrieved successfully:", data);
+        console.log("Mesocycles retrieved successfully:", data)
+        yourMesocycles = data
+        console.log(yourMesocycles)
         return data
     }).catch((error) => {
-        console.error("Error retrieving mesocycles:", error);
+        console.error("Error retrieving mesocycles:", error)
         return []
     })
+
+    
 
     return response
 
@@ -941,12 +944,62 @@ async function updateYourMesocycles(){
                 <h2>${mesocycle.name}</h2>
                 <p><span translation="text|mesocycle_structure">${translate("mesocycle_structure")}</span>: <span translation="text|mesocycle_structure_${mesocycle.structure}">${translate(`mesocycle_structure_${mesocycle.structure}`)}</span></p>
                 <p><span translation="text|mesocycle_objective">${translate("mesocycle_objective")}</span>: <span translation="text|mesocycle_objective_${mesocycle.objective}">${translate(`mesocycle_objective_${mesocycle.objective}`)}</span></p>
-                <p><span translation="text|total_microcycle">${translate("total_microcycle")}</span>: ${mesocycle.microcycles.length}</p>
+                <p><span translation="text|mesocycle_total_microcycle">${translate("mesocycle_total_microcycle")}</span>: ${mesocycle.microcycles.length}</p>
                 <button class="accept" translation="text|enter">${translate("enter")}</button>
                 <button class="cancel" translation="text|delete">${translate("delete")}</button>
             </div>`
         )
+
+        const buttonsAccept = mesocyclesList.querySelectorAll(".mesocycle .accept")
+        const buttonsCancel = mesocyclesList.querySelectorAll(".mesocycle .cancel")
+
+        for(let indexButtonAccept = 0 ; indexButtonAccept < buttonsAccept.length ; indexButtonAccept++){
+            const buttonAccept = buttonsAccept[indexButtonAccept]
+            buttonAccept.onclick = ((event)=>{
+                event.preventDefault()
+            })
+        }
+
+        for(let indexButtonCancel = 0 ; indexButtonCancel < buttonsCancel.length ; indexButtonCancel++){
+            const buttonCancel = buttonsCancel[indexButtonCancel]
+            buttonCancel.onclick = ((event)=>{
+                event.preventDefault()
+                if(confirm(translate("confirm_delete_mesocycle"))){
+                    deleteYourMesocycle(indexButtonCancel)
+                }
+            })
+        }
     }
+}
+
+function deleteYourMesocycle(indexMesocycle){
+    yourMesocycles.splice(indexMesocycle,1)
+
+    console.log("indexMesocycle",indexMesocycle)
+    console.log("yourMesocycles",yourMesocycles)
+
+    const request = openIndexedDB();
+
+    request.onsuccess = function(event) {
+
+        const db = event.target.result
+
+        const transaction = db.transaction("yourMesocycles", "readwrite")
+        const objectStore = transaction.objectStore("yourMesocycles")
+
+        objectStore.put(yourMesocycles, "yourMesocycles")
+
+        transaction.oncomplete = function() {
+            console.log("Mesocycle removed successfully")
+        }
+
+        transaction.onerror = function(event) {
+            console.error("Error removing mesocycle:", event.target.error)
+        }
+
+        updateYourMesocycles()
+    }
+
 }
 
 function savePreset(){
@@ -1013,7 +1066,7 @@ function loadPresets(){
 
     for(let indexButtonAccept = 0 ; indexButtonAccept < buttonsAccept.length ; indexButtonAccept++){
         const buttonAccept = buttonsAccept[indexButtonAccept]
-        buttonAccept.addEventListener("click",(event)=>{
+        buttonAccept.onclick = ((event)=>{
             event.preventDefault()
             const presetIndex = buttonAccept.getAttribute("data-preset-index")
             loadPreset(presetIndex)
@@ -1022,7 +1075,7 @@ function loadPresets(){
 
     for(let indexButtonCancel = 0 ; indexButtonCancel < buttonsCancel.length ; indexButtonCancel++){
         const buttonCancel = buttonsCancel[indexButtonCancel]
-        buttonCancel.addEventListener("click",(event)=>{
+        buttonCancel.onclick = ((event)=>{
             event.preventDefault()
             const presetIndex = buttonCancel.getAttribute("data-preset-index")
             deletePreset(presetIndex)
@@ -1031,6 +1084,7 @@ function loadPresets(){
 }
 
 function loadPreset(presetIndex){
+
     const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
     const preset = presets[presetIndex]
 
@@ -1045,9 +1099,58 @@ function loadPreset(presetIndex){
     document.querySelector("#new_mesocycle_total_microcycle").value = preset.total_microcycle
     document.querySelector("#new_mesocycle_sessions_microcycle").value = preset.sessions_microcycle
 
-    //TO-DO: MARCAR EJERCICIOS Y GESTION BOTONES SIGUIENTE / ACEPTAR
+    disableEnableNewMesocyclePage1Buttons()
 
-    disableEnableNewMesocycleButtons()
+    const elementExerciseList = containerNewMesocyclePage2.querySelector("#exercise_list")
+    const elementsExercises = elementExerciseList.querySelectorAll(".exercise")
+    const elementsInputs = elementExerciseList.querySelectorAll(".exercise input")
+    const exercisesPreset = preset.exercises
+    const exerciseNumbersPreset = Object.keys(exercisesPreset)
+
+    console.log("preset",preset)
+    console.log("elementsExercises",elementsExercises)
+
+    for(let elementsInputsIndex = 0 ; elementsInputsIndex < elementsInputs.length ; elementsInputsIndex++){
+        const elementInput = elementsInputs[elementsInputsIndex]
+        if(elementInput.checked)elementInput.click()
+    }
+
+    for(let indexExercise = 0 ; indexExercise < elementsExercises.length ; indexExercise++){
+        const elementExercice = elementsExercises[indexExercise]
+        const id = elementExercice.querySelector("input").id.split("_")[1]
+        const included = exerciseNumbersPreset.includes(id)
+
+        console.log({id})
+
+        if(included){
+            const equipmentOptions = exercisesPreset[id].equipment
+            const positionOptions = exercisesPreset[id].position
+            const measurementOptions = exercisesPreset[id].measurement
+
+            console.log("equipmentOptions",equipmentOptions)
+            console.log("positionOptions",positionOptions)
+            console.log("measurementOptions",measurementOptions)
+
+            for(let indexEquipmentOption = 0 ; indexEquipmentOption < equipmentOptions.length ; indexEquipmentOption++){
+                const equipmentOption = equipmentOptions[indexEquipmentOption]
+                const inputEquipment = elementExercice.querySelector(`#exercise_${id}_equipment_${equipmentOption}`)
+                if(inputEquipment && !inputEquipment.checked)inputEquipment.click()
+            }
+            for(let indexPositionOption = 0 ; indexPositionOption < positionOptions.length ; indexPositionOption++){
+                const positionOption = positionOptions[indexPositionOption]
+                const inputPosition = elementExercice.querySelector(`#exercise_${id}_position_${positionOption}`)
+                if(inputPosition && !inputPosition.checked)inputPosition.click()
+            }
+            for(let indexMeasurementOption = 0 ; indexMeasurementOption < measurementOptions.length ; indexMeasurementOption++){
+                const measurementOption = measurementOptions[indexMeasurementOption]
+                const inputMeasurement = elementExercice.querySelector(`#exercise_${id}_measurement_${measurementOption}`)
+                if(inputMeasurement && !inputMeasurement.checked)inputMeasurement.click()
+            }
+        }
+    }
+
+    disableEnableNewMesocyclePage2Buttons()
+
     closeModal("modal_presets")
 }
 

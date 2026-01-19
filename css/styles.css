@@ -98,7 +98,7 @@ input[type=checkbox],input[type=radio],label[for]{
 }
 
 li:has(input[required]),li:has(select[required]) {
-    &::after{
+    label::after{
         content: "*";
         color: red;
         font-size:1.25rem;
@@ -325,6 +325,13 @@ button, input[type="button"] {
     justify-items: start;
     grid-template-rows: auto 1fr auto;
     height: inherit;
+
+    &#new_mesocycle{
+        li{
+            display: grid;
+            justify-items: center;
+        }
+    }
     
     ul{
         list-style: none;
