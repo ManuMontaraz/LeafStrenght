@@ -23,6 +23,8 @@
     "confirm_delete_preset": "¿Estás seguro de que quieres eliminar esta plantilla?",
     "confirm_delete_mesocycle": "¿Estás seguro de que quieres eliminar este mesociclo?",
 
+    "alert_preset_saved_successfully": "¡Plantilla guardada con éxito!",
+
     "modal_presets_title": "Plantillas de mesociclos",
 
     "mesocycle_name": "Nombre del Mesociclo",

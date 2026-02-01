@@ -35,10 +35,14 @@ const buttonBackNewMesocycle = document.querySelector("#button_new_mesocycle_bac
 const buttonAcceptNewMesocycle = document.querySelector("#button_new_mesocycle_accept")
 const buttonsSavePresetNewMesocycle = document.querySelectorAll(".button_new_mesocycle_save_preset")
 const buttonsLoadPresetNewMesocycle = document.querySelectorAll(".button_new_mesocycle_load_preset")
+const buttonBackMesocyclePage1 = document.querySelector("#button_mesocycle_back_page1")
+const buttonBackMesocyclePage2 = document.querySelector("#button_mesocycle_back_page2")
 const elementLoader = document.querySelector("#loader")
 const containerYourMesocycles = document.querySelector("#your_mesocycles")
 const containerNewMesocycle = document.querySelector("#new_mesocycle")
 const containerNewMesocyclePage2 = document.querySelector("#new_mesocycle_page2")
+const containerContainerMesocyclePage1 = document.querySelector("#container_mesocycle_page1")
+const containerContainerMesocyclePage2 = document.querySelector("#container_mesocycle_page2")
 const containerModals = document.querySelector("#container_modals")
 
 let yourMesocycles// = await getYourMesocycles()
@@ -50,7 +54,7 @@ console.log({equipments})
 console.log({positions})
 console.log({measurements})
 
-console.log({yourMesocycles})
+//console.log({yourMesocycles})
 //alert(JSON.stringify(yourMesocycles))
 
 init()
@@ -589,6 +593,11 @@ function setEvents(){
         newMesocycle()
     })
 
+    buttonBackMesocyclePage1.addEventListener("click", (event)=>{
+        event.preventDefault()
+        showContainer(containerYourMesocycles)
+    })
+
     containerModals.addEventListener("click",(event)=>{
         event.preventDefault()
         
@@ -922,6 +931,44 @@ function getDataMicrocycle(arrayActualTotalMicrocycle,objective){
     return [intensity,rir,rpe,sets,reps]
 }
 
+function enterMesocycle(indexMesocycle){
+    showContainer(containerContainerMesocyclePage1)
+
+    const microcyclesList = containerContainerMesocyclePage1.querySelector("#microcycles_list")
+    const mesocycle = yourMesocycles[indexMesocycle]
+    const microcycle = mesocycle.microcycles.flatMap(microcycle => Object.values(microcycle)).find(day=> day.done === false)
+    const exercisesMicrocycle = microcycle.exercises
+
+    console.log("microcycle",microcycle,microcycle.length)
+    console.log("exercises",exercisesMicrocycle,exercisesMicrocycle.length)
+
+    containerContainerMesocyclePage1.querySelector("#mesocycle_name").textContent = mesocycle.name
+    containerContainerMesocyclePage1.querySelector("#mesocycle_total_microcycle").textContent = mesocycle.microcycles.length
+    containerContainerMesocyclePage1.querySelector("#mesocycle_current_microcycle").textContent = mesocycle.microcycles.findIndex(microcycle => Object.values(microcycle).some(day => day === microcycle)) + 2
+    containerContainerMesocyclePage1.querySelector("#mesocycle_current_session").textContent = Object.values(microcycle).findIndex(day => day === microcycle) + 2
+    containerContainerMesocyclePage1.querySelector("#mesocycle_total_session").textContent = Object.values(microcycle).length
+
+    microcyclesList.innerHTML = ""
+    for(let indexExercises = 0 ; indexExercises < exercisesMicrocycle.length ; indexExercises++){
+        const exerciseKey = parseInt(exercisesMicrocycle[indexExercises])
+        const exercise = exercises.find(exercise=>exercise.id === exerciseKey)
+
+        console.log({exercise})
+        console.log({exerciseKey})
+
+        //TO-DO: SELECCIONAR EJERCICIOS SEGÚN ESTRUCTURA Y OTROS PARÁMETROS
+
+        microcyclesList.insertAdjacentHTML(
+            "beforeend",
+            `<li class="exercise">
+                <h2 translation="text|${exercise?.title}">${translate(`${exercise?.title}`)}</h2>
+                <p><span translation="text|for">${translate(`for`)}</span><span>: </span><span translation="text|category_${exercise?.category}">${translate(`category_${exercise?.category}`)}</span></p>
+                <p translation="text|muscle_${exercise?.muscle}">${translate(`muscle_${exercise?.muscle}`)}</p>
+            </li>`
+        )
+    }
+}
+
 async function updateYourMesocycles(){
     //TO-DO: ACTUALIZAR LA LISTA DE MESOCICLOS DEL USUARIO
     const mesocyclesList = containerYourMesocycles.querySelector("#mesocycles_list")
@@ -957,6 +1004,7 @@ async function updateYourMesocycles(){
             const buttonAccept = buttonsAccept[indexButtonAccept]
             buttonAccept.onclick = ((event)=>{
                 event.preventDefault()
+                enterMesocycle(indexButtonAccept)
             })
         }
 
@@ -999,7 +1047,6 @@ function deleteYourMesocycle(indexMesocycle){
 
         updateYourMesocycles()
     }
-
 }
 
 function savePreset(){
@@ -1039,6 +1086,10 @@ function savePreset(){
         presets[indexExistName] = preset
     }else presets.push(preset)
     localStorage.setItem("mesocyclePresets",JSON.stringify(presets))
+
+    buttonsLoadPresetNewMesocycle.forEach(button => button.removeAttribute("disabled"))
+
+    alert(translate("alert_preset_saved_successfully"))
 
 }
 

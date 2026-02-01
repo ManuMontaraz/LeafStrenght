@@ -19,6 +19,7 @@
 :root {
     --color-primary: #333;
     --color-secondary: #555;
+    --color-terciary: #727272;
     --color-background: #222;
     --color-text: #f0f0f0;
     --color-accent: #ff9800;
@@ -326,6 +327,14 @@ button, input[type="button"] {
     grid-template-rows: auto 1fr auto;
     height: inherit;
 
+    &#container_mesocycle_page1{
+        grid-template-rows: auto 1fr auto auto;
+
+        .exercise {
+            background-color: var(--color-terciary);
+        }
+    }
+
     &#new_mesocycle{
         li{
             display: grid;
@@ -360,7 +369,7 @@ button, input[type="button"] {
             li{
                 display:grid;
                 max-width: 16rem;
-                background:dimgrey;
+                background:var(--color-terciary);
                 border-radius: var(--border-radius);
                 justify-content: space-around;
                 gap: var(--huge-margin);
