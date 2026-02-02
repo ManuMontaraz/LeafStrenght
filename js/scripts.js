@@ -60,6 +60,15 @@ console.log({measurements})
 init()
 
 function init(){
+    
+    // Inicializa la aplicación:
+    // - Carga los ejercicios en el DOM
+    // - Configura el idioma según preferencia del usuario
+    // - Actualiza la lista de mesociclos del usuario
+    // - Configura los eventos de los botones y campos
+    // - Habilita o deshabilita botones de la primera página del formulario
+
+
     loadExercises()
     setLanguage(getLanguage())
     updateYourMesocycles()
@@ -70,6 +79,12 @@ function init(){
 ///////////////////////////////////////////////////////////////////////////////
 
 async function getExercises() {
+
+    // Obtiene los ejercicios desde un archivo JSON
+    // Procesa la lista para agregar un ID único a cada ejercicio
+    // Genera listas únicas de músculos, categorías, equipos, posiciones y mediciones
+    // Marca que los ejercicios han sido cargados y verifica si se puede ocultar el loader
+
     const response = await fetch('exercises.json')
     const exercises = (await response.json()).map((exercise, index) => ({...exercise,id: index})).sort((a, b) => a.category.localeCompare(b.category))
 
@@ -88,6 +103,12 @@ async function getExercises() {
 }
 
 function loadExercises(){
+
+    // Carga los ejercicios en la interfaz
+    // - Inserta elementos de búsqueda y filtros
+    // - Inserta cada ejercicio en la lista con sus detalles y opciones
+    // - Configura eventos de filtrado y selección de ejercicios
+
     const containerExerciseList = containerNewMesocyclePage2.querySelector("#exercise_list")
     containerExerciseList.innerHTML = `
         <li id="exercise_list_search">
@@ -196,6 +217,12 @@ function loadExercises(){
 }
 
 function setExercisesEvents(){
+
+    // Configura los eventos de búsqueda y filtrado de ejercicios
+    // - Detecta cambios en el input de búsqueda y selects de filtros
+    // - Filtra los ejercicios visibles según los criterios
+    // - Actualiza el estado de los botones de la página 2 del mesociclo
+
     const searchExercise = document.querySelector("#search_exercise_title")
     const selectMuscles = document.querySelector("#search_exercise_muscles")
     const selectCategories = document.querySelector("#search_exercise_categories")
@@ -300,6 +327,11 @@ function setExercisesEvents(){
 }
 
 function disableEnableNewMesocyclePage2Buttons(){
+
+    // Habilita o deshabilita el botón de aceptar mesociclo según si
+    // todos los ejercicios requeridos están seleccionados
+    // Marca los ejercicios como "activos" si todos sus campos están completados
+
     const elementExerciseList = document.querySelector("#exercise_list")
     const elementsExercises = elementExerciseList.querySelectorAll(".exercise")
 
@@ -332,6 +364,10 @@ function disableEnableNewMesocyclePage2Buttons(){
 }
 
 function disableEnableNewMesocyclePage1Buttons(){
+
+    // Habilita o deshabilita los botones de navegación y guardar preset
+    // de la primera página del formulario según los inputs requeridos y presets disponibles
+
     const requiredInputs = containerNewMesocycle.querySelectorAll("input:not([type=button])[required],select[required]")
     const requiredInputsWithValue = [...requiredInputs].filter(input=>input.value)
 
@@ -348,6 +384,12 @@ function disableEnableNewMesocyclePage1Buttons(){
 }
 
 function getLanguage() {
+
+    // Obtiene el idioma preferido del usuario
+    // - Primero intenta desde localStorage
+    // - Luego usa la configuración del navegador
+    // - Devuelve un código corto de idioma válido (en, es, fr, etc.)
+
     let lang = localStorage.getItem("language") || navigator.language || navigator.userLanguage || 'en'
     
     lang = lang.toLowerCase()
@@ -365,6 +407,11 @@ function getLanguage() {
 }
 
 function setLanguage(language=getLanguage()){
+
+    // Configura el idioma de la aplicación
+    // - Carga traducciones desde localStorage si existen y coinciden con la versión
+    // - Si no, obtiene el JSON correspondiente y guarda los datos en localStorage
+    // - Traduce los elementos del DOM con atributo [translation]
 
     if(localStorage.getItem('language') === language && localStorage.getItem('version') === version){
         const elementsTranslation = document.querySelectorAll("[translation]")
@@ -401,6 +448,10 @@ function setLanguage(language=getLanguage()){
 }
 
 function translate(toTranslate){
+
+    // Traduce elementos o cadenas según los datos de idioma cargados
+    // - Soporta traducción de texto, HTML, placeholder, title, value y atributos
+    // - Si no hay idioma cargado, llama a setLanguage()
 
     if(!localStorage.getItem('language')){
         setLanguage(getLanguage())
@@ -451,6 +502,10 @@ function translate(toTranslate){
 }
 
 function checkLoad(){
+
+    // Verifica si el idioma y los ejercicios ya fueron cargados
+    // Si ambos están listos, oculta el loader
+
     console.log({languageLoaded},{exercisesLoaded})
     if(languageLoaded && exercisesLoaded){
         elementLoader.style.display = "none"
@@ -458,6 +513,9 @@ function checkLoad(){
 }
 
 function showContainer(container){
+    
+    // Muestra un contenedor específico y oculta los demás
+
     const containers = document.querySelectorAll(".container:not(.hide)")
 
     for(let indexContainers = 0 ; indexContainers < containers.length ; indexContainers++){
@@ -468,6 +526,12 @@ function showContainer(container){
 }
 
 function setEvents(){
+    
+    // Configura eventos de la interfaz principal:
+    // - Inputs del formulario de mesociclo
+    // - Botones de cambio de idioma
+    // - Botones de navegación entre contenedores
+    // - Guardado y carga de presets
 
     containerNewMesocycle.addEventListener("input",(event)=>{
 
@@ -608,6 +672,11 @@ function setEvents(){
 }
 
 function getInputValues(container,replaceId="",needActive){
+    
+    // Obtiene los valores de inputs y selects dentro de un contenedor
+    // - Puede filtrar solo los elementos activos si needActive es true
+    // - Devuelve un objeto con las opciones o un código de error si falta un input requerido
+
     if(!container)return
 
     const selector = needActive ? ".active input,.active select" : "input,select"
@@ -634,6 +703,10 @@ function getInputValues(container,replaceId="",needActive){
 }
 
 function reduceOptionExercises(optionsExercises){
+    
+    // Convierte el objeto de opciones de ejercicios en una estructura
+    // agrupando por número de ejercicio y categoría (equipment, position, measurement)
+
     return Object.entries(optionsExercises).reduce((accumulator, [key, value]) => {
         if (!value) return accumulator
         const [, num, category, item] = key.split("_")
@@ -649,6 +722,10 @@ function reduceOptionExercises(optionsExercises){
 }
 
 function openIndexedDB() {
+    
+    // Abre o crea la base de datos IndexedDB "yourMesocyclesDB"
+    // - Crea el objectStore "yourMesocycles" si no existe
+
     const request = indexedDB.open("yourMesocyclesDB", 1)
 
     request.onupgradeneeded = (e) => {
@@ -662,6 +739,11 @@ function openIndexedDB() {
 }
 
 function getYourMesocycles(){
+    
+    // Obtiene los mesociclos guardados del usuario desde IndexedDB
+    // - Devuelve una promesa que resuelve con la lista de mesociclos
+    // - Actualiza la variable global yourMesocycles
+
     const request = openIndexedDB()
 
     const promiseRequest = new Promise((resolve, reject) => {
@@ -712,6 +794,12 @@ function getYourMesocycles(){
 
 function addToYourMesocycles(mesocycle){
 
+    // Agrega un nuevo mesociclo al almacenamiento del usuario
+    // - Obtiene la lista existente
+    // - Agrega el nuevo mesociclo
+    // - Guarda la lista actualizada en IndexedDB
+    // - Actualiza la lista en la interfaz
+
     const mesoscycles = getYourMesocycles()
 
     mesoscycles.then((mesoscycles) => {
@@ -746,8 +834,12 @@ function addToYourMesocycles(mesocycle){
 }
 
 function newMesocycle(){
-    //TO-DO: MONTAR ESTRUCTURA MESOCICLO DEL FORMULARIO
-    //localStorage.setItem("yourMesocycles",mesocycleForm)
+    
+    // Crea un nuevo mesociclo a partir de los valores del formulario
+    // - Calcula la estructura de sesiones y microciclos
+    // - Asigna ejercicios a cada sesión
+    // - Guarda el mesociclo en IndexedDB
+    // - Muestra la lista de mesociclos del usuario
 
     const mesocycle = getInputValues(containerNewMesocycle,"new_mesocycle_")
     const total_microcycle = parseInt(mesocycle.total_microcycle)
@@ -811,6 +903,11 @@ function newMesocycle(){
 }
 
 function getDataMicrocycle(arrayActualTotalMicrocycle,objective){
+    
+    // Calcula los parámetros de cada microciclo según el objetivo:
+    // - intensidad, RIR, RPE, sets y reps
+    // - Realiza un cálculo progresivo entre el mínimo y máximo definido
+
     const intensityMinMax = [60,95]
     const rirMinMax = [4,0]
     const rpeMinMax = [5,10]
@@ -932,6 +1029,12 @@ function getDataMicrocycle(arrayActualTotalMicrocycle,objective){
 }
 
 function enterMesocycle(indexMesocycle){
+    
+    // Abre un mesociclo existente del usuario
+    // - Muestra la página de detalle del mesociclo
+    // - Obtiene el microciclo actual y la sesión pendiente
+    // - Carga los ejercicios correspondientes en la interfaz
+
     showContainer(containerContainerMesocyclePage1)
 
     const microcyclesList = containerContainerMesocyclePage1.querySelector("#microcycles_list")
@@ -970,6 +1073,11 @@ function enterMesocycle(indexMesocycle){
 }
 
 async function updateYourMesocycles(){
+    
+    // Actualiza la lista de mesociclos del usuario en la interfaz
+    // - Obtiene la lista de IndexedDB
+    // - Inserta cada mesociclo con botones de entrar y eliminar
+
     //TO-DO: ACTUALIZAR LA LISTA DE MESOCICLOS DEL USUARIO
     const mesocyclesList = containerYourMesocycles.querySelector("#mesocycles_list")
 
@@ -1021,6 +1129,11 @@ async function updateYourMesocycles(){
 }
 
 function deleteYourMesocycle(indexMesocycle){
+    
+    // Elimina un mesociclo del almacenamiento del usuario
+    // - Actualiza IndexedDB
+    // - Actualiza la lista de mesociclos en la interfaz
+
     yourMesocycles.splice(indexMesocycle,1)
 
     console.log("indexMesocycle",indexMesocycle)
@@ -1050,6 +1163,12 @@ function deleteYourMesocycle(indexMesocycle){
 }
 
 function savePreset(){
+    
+    // Guarda un preset de mesociclo en localStorage
+    // - Valida que todos los campos y ejercicios estén completos
+    // - Sobrescribe un preset existente si el nombre coincide
+    // - Habilita los botones de carga de preset
+
     const name = document.querySelector("#new_mesocycle_name").value.trim()
     const objective = document.querySelector("#new_mesocycle_objective").value
     const structure = document.querySelector("#new_mesocycle_structure").value
@@ -1094,6 +1213,10 @@ function savePreset(){
 }
 
 function loadPresets(){
+    
+    // Carga los presets de mesociclo desde localStorage y los muestra en un modal
+    // - Configura botones de cargar y eliminar para cada preset
+    
     const modalPresetsContent = document.getElementById("modal_presets_content")
     modalPresetsContent.innerHTML = ""
 
@@ -1135,6 +1258,10 @@ function loadPresets(){
 }
 
 function loadPreset(presetIndex){
+    
+    // Carga un preset específico en el formulario de nuevo mesociclo
+    // - Marca los ejercicios correspondientes como activos
+    // - Actualiza botones de navegación y aceptar
 
     const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
     const preset = presets[presetIndex]
@@ -1206,6 +1333,11 @@ function loadPreset(presetIndex){
 }
 
 function deletePreset(presetIndex){
+    
+    // Elimina un preset de mesociclo de localStorage
+    // - Confirma con el usuario antes de eliminar
+    // - Recarga la lista de presets
+
     const presets = localStorage.getItem("mesocyclePresets")?JSON.parse(localStorage.getItem("mesocyclePresets")):[]
     const preset = presets[presetIndex]
 
@@ -1224,6 +1356,12 @@ function deletePreset(presetIndex){
 }
 
 function openModal(idModal,autoRemoveTime){
+    
+    // Abre un modal específico
+    // - Cierra cualquier modal abierto previamente
+    // - Añade clase "open" al contenedor y "active" al modal
+    // - Opcionalmente cierra el modal después de un tiempo
+
     if(!idModal)return
     closeModal()
 
@@ -1240,6 +1378,10 @@ function openModal(idModal,autoRemoveTime){
 }
 
 function closeModal(idModal = containerModals.querySelector(".modal.active")?.id){
+    
+    // Cierra un modal específico
+    // - Elimina la clase "open" del contenedor y "active" del modal
+    
     const modal = document.getElementById(idModal)
 
     if(modal){
