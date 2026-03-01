@@ -162,7 +162,7 @@
     {
         "title": "exercise_crunch",
         "muscle": "abs",
-        "category": "core",
+        "category": "pull",
         "equipment": ["dumbbell", "machine", "bodyweight", "band"],
         "position": ["flat", "inclined", "declined", "seated"],
         "measurement": ["reps", "time"]
@@ -170,7 +170,7 @@
     {
         "title": "exercise_legRaises",
         "muscle": "abs",
-        "category": "core",
+        "category": "pull",
         "equipment": ["dumbbell", "bodyweight", "band"],
         "position": ["hanging"],
         "measurement": ["reps", "time"]
@@ -178,7 +178,7 @@
     {
         "title": "exercise_plank",
         "muscle": "abs",
-        "category": "core",
+        "category": "fullbody",
         "equipment": ["dumbbell", "bodyweight"],
         "position": ["lying"],
         "measurement": ["time"]
@@ -186,7 +186,7 @@
     {
         "title": "exercise_burpees",
         "muscle": "fullbody",
-        "category": "core",
+        "category": "fullbody",
         "equipment": ["dumbbell","bodyweight"],
         "position": ["stand"],
         "measurement": ["reps", "time"]

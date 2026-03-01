@@ -497,7 +497,7 @@ function translate(toTranslate){
             }
         }
     }else if(toTranslate){
-        return dataTranslation[toTranslate] ?? toTranslate
+        return dataTranslation[toTranslate] ?? toTranslate ?? []
     }
 }
 
@@ -707,6 +707,8 @@ function reduceOptionExercises(optionsExercises){
     // Convierte el objeto de opciones de ejercicios en una estructura
     // agrupando por número de ejercicio y categoría (equipment, position, measurement)
 
+    console.log("REDUCE",{optionsExercises})
+
     return Object.entries(optionsExercises).reduce((accumulator, [key, value]) => {
         if (!value) return accumulator
         const [, num, category, item] = key.split("_")
@@ -833,6 +835,58 @@ function addToYourMesocycles(mesocycle){
     })
 }
 
+function selectExercises(structureName,exercisesCandidate){
+
+    exercisesCandidate = [...exercisesCandidate]
+    const exercisesSelected = []
+
+    // Selecciona ejercicios aleatorios de la lista de candidatos según la estructura de la sesión
+    // - Para cada estructura (fullbody, upper, lower, weider) define categorías y límites de ejercicios por músculo
+    // - Selecciona ejercicios aleatorios que cumplan los criterios hasta llenar el número máximo o agotar candidatos
+
+    //MAX 6 EJERCICIOS POR SESIÓN PARA NO SOBRECARGAR, MÁX 2 POR GRUPO MUSCULAR PARA ASEGURAR VARIEDAD (EN FULLBODY SOLO 1 POR GRUPO MUSCULAR)
+    let maxExercises = 6
+    let maxExercisesPerMuscle = 2
+    
+    switch(structureName){
+        case "fullbody":
+            structureName = ["push","pull","legs"]
+            maxExercisesPerMuscle = 1
+        break
+        case "upper":
+            structureName = ["push","pull"]
+        break
+        case "lower":
+            structureName = ["legs"]
+        break
+        case "weider":
+            structureName = ["push","pull","legs"]
+        break
+    }
+
+    while(exercisesSelected.length < maxExercises && exercisesCandidate.length > 0){
+
+        const randomIndex = Math.floor(Math.random() * exercisesCandidate.length)
+        const exercise = exercisesCandidate[randomIndex]
+
+        //console.log("exercise",exercise)
+
+        if(!exercisesSelected.some(selected => selected.id === exercise.id) && structureName.includes(exercise.category)){
+            if(exercisesSelected.filter(selected=>selected.muscle===exercise.muscle).length < maxExercisesPerMuscle){
+                exercisesSelected.push(exercise)
+                console.log({exercise},`(${exercise.title}) seleccionado porque no hay más de ${maxExercisesPerMuscle} "${exercise.muscle}" (${exercisesSelected.filter(selected=>selected.muscle===exercise.muscle).length}) y es de categoría "${structureName}" (${exercise.category})`)
+            }
+        }
+
+        exercisesCandidate.splice(randomIndex, 1)
+    }
+
+    console.log("SELECT EXERCISES",{structureName,exercisesCandidate,exercisesSelected})
+
+    return exercisesSelected
+    
+}
+
 function newMesocycle(){
     
     // Crea un nuevo mesociclo a partir de los valores del formulario
@@ -874,20 +928,36 @@ function newMesocycle(){
             structure.push("arms")
         break
     }
+
     for(let indexTotalMicrocycle = 0 ; indexTotalMicrocycle < total_microcycle ; indexTotalMicrocycle++){
         const microcycle = {}
         const [intensity, rir, rpe, sets, reps] = getDataMicrocycle([indexTotalMicrocycle+1,total_microcycle],objective)
 
         for(let indexSessionsMicrocycle = 0 ; indexSessionsMicrocycle < sessions_microcycle ; indexSessionsMicrocycle++){
             const session = microcycle[indexSessionsMicrocycle] = {}
-            session.structure = structure[indexSessionsMicrocycle % structure.length]
+            const structureName = structure[indexSessionsMicrocycle % structure.length]
+            const sessionExercises = Object.keys(mesocycle.exercises)
+            const exercisesCandidate = exercises.filter(exercise=>sessionExercises.includes(String(exercise.id)))
+            const exercisesSelected = selectExercises(structureName,exercisesCandidate)
+
+            session.structure = structureName
             session.intensity = intensity
             session.rir = rir
             session.rpe = rpe
             session.sets = sets
             session.reps = reps
-            session.exercises = Object.keys(mesocycle.exercises) //TO-DO: ASIGNAR EJERCICIOS A CADA SESIÓN SEGÚN ESTRUCTURA
+            session.exercises = exercisesSelected.map(selected=>selected.id) //TO-DO: ASIGNAR EJERCICIOS A CADA SESIÓN SEGÚN ESTRUCTURA
             session.done = false
+
+            console.log("SESION",{session})
+            console.log("ESTRUCTURA",{structureName})
+            console.log("sessionExercises",sessionExercises)
+            console.log("EJERCICIOS1",{exercises: mesocycle.exercises, sessionExercises: session.exercises})
+            console.log("exercises",exercises)
+            console.log("exercisesCandidate",exercisesCandidate)
+            console.log("exercisesSelected",exercisesSelected)
+
+            //CONTAR CON VARIABLES GLOBALES
         }
         mesocycle.microcycles.push(microcycle)
     }
