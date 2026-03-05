@@ -1112,6 +1112,7 @@ function enterMesocycle(indexMesocycle){
     const microcycle = mesocycle.microcycles.flatMap(microcycle => Object.values(microcycle)).find(day=> day.done === false)
     const exercisesMicrocycle = microcycle.exercises
 
+    console.log("mesocycle",mesocycle,mesocycle.length)
     console.log("microcycle",microcycle,microcycle.length)
     console.log("exercises",exercisesMicrocycle,exercisesMicrocycle.length)
 
@@ -1124,12 +1125,17 @@ function enterMesocycle(indexMesocycle){
     microcyclesList.innerHTML = ""
     for(let indexExercises = 0 ; indexExercises < exercisesMicrocycle.length ; indexExercises++){
         const exerciseKey = parseInt(exercisesMicrocycle[indexExercises])
-        const exercise = exercises.find(exercise=>exercise.id === exerciseKey)
+        const exercise = [...exercises].find(exercise=>exercise.id === exerciseKey)
+        const exerciseOptions = mesocycle.exercises[exerciseKey]
 
-        console.log({exercise})
         console.log({exerciseKey})
+        console.log({exercise})
+        console.log({exerciseOptions})
 
         //TO-DO: SELECCIONAR EJERCICIOS SEGÚN ESTRUCTURA Y OTROS PARÁMETROS
+        const rm = loadRM(exerciseKey)
+
+        console.log({rm})
 
         microcyclesList.insertAdjacentHTML(
             "beforeend",
@@ -1140,6 +1146,103 @@ function enterMesocycle(indexMesocycle){
             </li>`
         )
     }
+}
+
+function saveRM(exerciseId,equipment,measurement,position,rm){
+    /* TO-DO: GUARDAR ALGO ASÍ:
+    [
+        {
+            "id":11,
+            "saved":[
+                {
+                    "equipment":"dumbbell",
+                    "measurement":"reps",
+                    "position":"stand",
+                    "1rm":10
+                },
+                {
+                    "equipment":"cable",
+                    "measurement":"reps",
+                    "position":"stand",
+                    "1rm":7
+                }
+            ],
+            "last":0 //ÍNDICE DEL ÚLTIMO USADO (saved) PARA MOSTRAR EN LA PRÓXIMA SESIÓN (SI HAY MÁS DE UNO, SI SOLO HAY UNO SE MUESTRA SIEMPRE ÉSE)
+        }
+    ]
+
+    PARA ENCONTRAR EL ÚLTIMO RM GUARDADO:
+    temp2.find(exercise=>exercise.id===11).saved[temp2.find(exercise=>exercise.id===11).last]
+    */
+
+    const savedRM = localStorage.getItem("savedRM") ? JSON.parse(localStorage.getItem("savedRM")) : []
+    const exercise = savedRM.find(exercise=>exercise.id===exerciseId)
+    if(exercise){
+        const existSaved = exercise.saved.find(saved=>saved.equipment===equipment && saved.measurement===measurement && saved.position===position)
+        if(existSaved){
+            existSaved["1rm"] = rm
+        }else{
+            exercise.saved.push({equipment,measurement,position,"1rm":rm})
+        }
+    }else{
+        savedRM.push({
+            "id":exerciseId,
+            "saved":[{equipment,measurement,position,"1rm":rm}],
+            "last":0
+        })
+    }
+    localStorage.setItem("savedRM",JSON.stringify(savedRM))
+}
+
+function loadRM(exerciseId,equipmentOrLast="last",measurement,position){
+    
+    /* TO-DO: GUARDAR ALGO ASÍ:
+    [
+        {
+            "id":11,
+            "saved":[
+                {
+                    "equipment":"dumbbell",
+                    "measurement":"reps",
+                    "position":"stand",
+                    "1rm":10
+                },
+                {
+                    "equipment":"cable",
+                    "measurement":"reps",
+                    "position":"stand",
+                    "1rm":7
+                }
+            ],
+            "last":0 //ÍNDICE DEL ÚLTIMO USADO (saved) PARA MOSTRAR EN LA PRÓXIMA SESIÓN (SI HAY MÁS DE UNO, SI SOLO HAY UNO SE MUESTRA SIEMPRE ÉSE)
+        }
+    ]
+
+    PARA ENCONTRAR EL ÚLTIMO RM GUARDADO:
+    temp2.find(exercise=>exercise.id===11).saved[temp2.find(exercise=>exercise.id===11).last]
+    */
+
+    const savedRM = localStorage.getItem("savedRM") ? JSON.parse(localStorage.getItem("savedRM")) : []
+    const exercise = savedRM.find(exercise=>exercise.id===exerciseId)
+
+    console.log({savedRM})
+    console.log({exercise})
+    
+    if(exercise){
+        if(equipmentOrLast === "last"){
+            const saved = exercise.saved[exercise.last]
+            console.log({saved})
+            if(saved){
+                return saved
+            }
+        }else{
+            const existSaved = exercise.saved.find(saved=>saved.equipment===equipmentOrLast && saved.measurement===measurement && saved.position===position)
+            if(existSaved){
+                return existSaved
+            }
+        }
+    }
+    return null
 }
 
 async function updateYourMesocycles(){
